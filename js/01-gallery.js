@@ -1,42 +1,55 @@
 import { galleryItems } from './gallery-items.js';
-// Change code below this line
 
-const galleryEl = document.querySelector('.gallery');
+const list = document.querySelector('.gallery');
+list.addEventListener('click', onClickList);
 
-const galleryMarkup = galleryItems
-  .map(
-    ({ preview, original, description }) =>
-      `<div class="gallery__item">
-  <a class="gallery__link" href="${original}">
+console.log(createGalleryMarkup(galleryItems));
+
+const instance = basicLightbox.create(
+  `<img class="gallery__image-modal" src="" width="800" height="600">`,
+  {
+    onShow: instance => {
+      window.addEventListener('keydown', onEscKayPress);
+    },
+    onClose: instance => {
+      window.removeEventListener('keydown', onEscKayPress);
+    },
+  }
+);
+
+function onClickList(evt) {
+  evt.preventDefault();
+  if (!evt.target.classList.contains('gallery__image')) {
+    return;
+  }
+  instance.element().querySelector('img').src = evt.target.dataset.source;
+
+  instance.show();
+}
+
+function onEscKayPress(evt) {
+  if (evt.code !== 'Escape') {
+    return;
+  }
+  instance.close();
+}
+
+function createGalleryMarkup(galleryItems) {
+  const elementGalleryMarkup = galleryItems
+    .map(({ description, original, preview }) => {
+      return `
+    <li class="gallery__item">
+    <a class="gallery__link" href="${original}">
     <img
       class="gallery__image"
       src="${preview}"
       data-source="${original}"
       alt="${description}"
     />
-  </a>
-</div>`
-  )
-  .join('');
+    </a>
+    </li>`;
+    })
+    .join('');
 
-galleryEl.insertAdjacentHTML('beforeend', galleryMarkup);
-
-galleryEl.addEventListener('click', event => {
-  event.preventDefault();
-  if (event.target.nodeName !== 'IMG') {
-    return;
-  }
-  const instance = basicLightbox.create(`
-    <img src = ${event.target.dataset.source} width="800" height="600">
-`);
-
-  instance.show();
-
-  galleryEl.addEventListener('keydown', event => {
-    if (event.code === 'Escape') {
-      instance.close();
-    }
-  });
-});
-
-// console.log(galleryItems);
+  list.insertAdjacentHTML('beforeend', elementGalleryMarkup);
+}
